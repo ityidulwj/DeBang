@@ -1,5 +1,10 @@
 package com.yidu.bean;
-
+/**
+ * 描述：
+ * @author ludaxuan
+ * @dateTime 2018年12月8日下午4:31:26
+ * @version 1.0
+ */
 public class User {
 	private int userid;
 	private String userName;
