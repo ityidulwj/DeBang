@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yidu.lrh.dao.DeliveryMapper">
+	<resultMap type="com.yidu.lrh.bean.Delivery" id="DeliveryMap">
+		<result property="sendId" column="sendId" />
+		<result property="packingid" column="packingid" />
+		<result property="networkstation" column="networkstation" />
+		<result property="statusing" column="statusing" />
+		<result property="courierId" column="courierId" />
+		<result property="operator" column="operator" />
+		<result property="sendTime" column="sendTime" />
+		<result property="completeTime" column="completeTime" />
+	</resultMap>
+	<!-- 分页查询 -->
+	<select id="selectLimit" resultType="com.yidu.lrh.bean.Delivery" parameterType="map">
+		SELECT * FROM delivery
+		<if test="page!=null">
+			LIMIT #{page},
+		</if>
+		<if test="row!=null">
+			#{row}
+		</if>
+	</select>
+	
+	<!-- 删除数据 -->
+	<delete id="DeleteData" parameterType="String">
+		DELETE FROM delivery WHERE sendId=#{sendId}
+	</delete>
+	
+	<!-- 新增数据 -->
+	<insert id="InsertData" parameterType="com.yidu.lrh.bean.Delivery">
+		INSERT INTO delivery VALUES(#{sendId},#{packingid},#{networkstation},
+		#{statusing},#{courierId},#{operator},NOW(),#{completeTime})
+	</insert>
+	
+	<!-- 修改数据 -->
+	<update id="UpdateData" parameterType="com.yidu.lrh.bean.Delivery">
+		UPDATE delivery SET
+		networkstation=#{networkstation},statusing=#{statusing},
+		courierId=#{courierId},operator=#{operator},
+		sendTime=#{sendTime},completeTime=#{completeTime}
+		WHERE sendId=#{sendId}
+	</update>
+</mapper>

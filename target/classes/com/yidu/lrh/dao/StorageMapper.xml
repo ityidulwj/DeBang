@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yidu.lrh.dao.StorageMapper">
+	<resultMap type="com.yidu.lrh.bean.Storage" id="StorageMap">
+		<result property="Networkstation" column="Networkstation" />
+		<result property="storageId" column="storageId" />
+		<result property="InStorageTime" column="InStorageTime" />
+		<result property="operator" column="operator" />
+		<result property="Packingid" column="Packingid" />
+		<result property="statusing" column="statusing" />
+		<result property="sendPeople" column="sendPeople" />
+	</resultMap>
+	
+	<!-- 根据ID查询包裹 -->
+	<select id="selectData" resultMap="StorageMap" parameterType="String">
+		SELECT * FROM storage WHERE Packingid=#{Packingid}
+	</select>
+	
+	<!-- 根据ID修改包裹状态 -->
+	<update id="updateStatusing" parameterType="map">
+		UPDATE STORAGE SET statusing=#{statusing} WHERE Packingid=#{Packingid}
+	</update>
+	
+	<!-- 分页查询 -->
+	<select id="selectLimit" resultMap="StorageMap" parameterType="map">
+		SELECT * FROM storage
+		<if test="page!=null">
+			LIMIT #{page},
+		</if>
+		<if test="row!=null">
+			#{row}
+		</if>
+	</select>
+	
+	<!-- 删除数据 -->
+	<delete id="DeleteData" parameterType="String">
+		DELETE FROM STORAGE WHERE Packingid=#{Packingid}
+	</delete>
+	
+	<!-- 新增数据 -->
+	<insert id="InsertData" parameterType="Storage">
+		INSERT INTO STORAGE VALUES
+		(#{Networkstation},#{storageId},NOW(),
+		#{operator},#{Packingid},
+		#{statusing},#{sendPeople});
+	</insert>
+	
+	<!-- 修改数据 -->
+	<update id="UpdateData" parameterType="Storage">
+		UPDATE storage SET
+		Networkstation=#{Networkstation},
+		storageId=#{storageId},InStorageTime=#{InStorageTime},
+		operator=#{operator},statusing=#{statusing},
+		sendPeople=#{sendPeople}
+		WHERE Packingid=#{Packingid}
+	</update>
+</mapper>

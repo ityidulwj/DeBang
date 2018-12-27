@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>派送表</title>
+<link rel="stylesheet" type="text/css" href="css/Storages.css">
+<link rel="stylesheet" type="text/css" href="css/demo.css">
+<!-- 导入jquery核心类库 -->
+<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+<!-- 导入easyui类库 -->
+<link rel="stylesheet" type="text/css"
+	href="js/easyui/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="js/easyui/themes/icon.css">
+<link rel="stylesheet" type="text/css" href="js/easyui/ext/portal.css">
+<script type="text/javascript" src="js/easyui/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="js/easyui/ext/jquery.portal.js"></script>
+<script type="text/javascript" src="js/easyui/ext/jquery.cookie.js"></script>
+<script src="js/easyui/locale/easyui-lang-zh_CN.js"
+	type="text/javascript"></script>
+</head>
+<body class="easyui-layout">
+	<div data-options="region:'center'" style="height: 300px">
+		<div id="ft" class="datagrid-toolbar">
+			<a id="save" onclick="doAdd()" icon="icon-add"
+				class="easyui-linkbutton" plain="true">新增</a> 
+			<a id="edit" onclick="doSave()" icon="icon-save" 
+				class="easyui-linkbutton" plain="true">保存</a> 
+			<a id="edit" onclick="doCancel()" icon="icon-cancel"
+				class="easyui-linkbutton" plain="true">取消</a> 
+			<a id="edit" onclick="doUpdate()" icon="icon-save"
+				class="easyui-linkbutton" plain="true">确认</a> 
+			<a id="edit" onclick="toStorage()" icon="icon-remove" 
+				class="easyui-linkbutton" plain="true">删除</a>
+			<div style="float: right; text-align: right;">
+				<input class="easyui-textbox"  name="Packingid" id="liketext" type="text">
+				<a style="color:black;" href="javaScript:void(0)" onclick="submitSelectLike()" class="easyui-linkbutton" data-options="iconCls:'icon-search'">搜索</a>
+			</div>
+		</div>
+		<table id="grid"></table>
+	</div>
+	<!-- 入库新增 -->
+	<div id="insertData" class="easyui-window" style="width:100%;max-width:300px;padding:20px 40px;">
+		<form id="fi" class="easyui-from" method="post">
+			<div>
+				<input class="easyui-textbox" name="sendId" prompt="派送ID" style="width: 100%;" data-options="required:true">
+			</div>
+			<div>
+				<input class="easyui-textbox" name="packingid" prompt="包裹ID" style="width: 100%;" data-options="required:true">
+			</div>
+			<div>
+				<input class="easyui-textbox" name="networkstation" prompt="网点地址" style="width: 100%;" data-options="required:true">
+			</div>
+			<div>
+				<select class="easyui-combobox" name="statusing" data-options="required:true" prompt="状态" style="width:100%">
+					<option>派送中</option>
+					<option>已处理</option>
+				</select>
+			</div>
+			<div>
+				<input class="easyui-textbox" name="courierId" prompt="快递员ID" style="width: 100%;" data-options="required:true">
+			</div>
+			<div>
+				<input class="easyui-textbox" name="operator" prompt="处理人" style="width: 100%;" data-options="required:true">
+			</div>
+			<div>
+				<input name="sendTime" prompt="派发时间" style="width: 100%;" type="hidden" value="time" data-options="required:true">
+			</div>
+			<div>
+				<input class="easyui-textbox" name="completeTime" prompt="完成时间" style="width: 100%;" data-options="required:true">
+			</div>
+		</form>
+		<div id="submitInsert">
+			<a href="javascript:void(0)" class="easyui-linkbutton c3" onclick="submitInsert()">派送新增</a>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+	//删除
+	function toStorage(){
+		var va=$('#grid').datagrid('getSelections');
+		if(va.length!=0){
+			$.messager.confirm('确认',"您确认想要删除记录吗？",function(fun){
+				if(fun){
+					var getID="";
+					for(var i=0;i<va.length;i++){
+						if(i==va.length-1){
+							getID=getID+va[i].sendId;
+						}else{
+							getID=getID+va[i].sendId+"-";
+						}
+					}
+					$.ajax({
+						type:"post",
+						url:"deleteDelivery.action",
+						data:"getID="+getID,
+						dataType:"text",
+						success:function(result){
+							$("#grid").datagrid("reload");//自动刷新
+							alert(result);
+						}
+					})
+				}
+			}) 
+		}else{
+			alert("你至少选一行！");
+		}
+	}
+	
+	//提交新增的数据
+	function submitInsert(){
+		var isValid = $("#fi").form('validate');
+		if(isValid){
+			$.ajax({
+				type:"post",
+				url:"insertDelivery.action",
+				data:$("#fi").serialize(),
+				dataType:"text",
+				success:function(result){
+					$("#grid").datagrid("reload");//自动刷新
+					$('#insertData').window('close');
+				}
+			})
+		}
+	}
+	
+	//提交模糊查询的数据
+	function submitSelectLike(){
+		//得到数据
+		var value=$('#liketext').val();
+		//提交查询数据
+		$('#grid').datagrid('load', {    
+			Packingid:value
+		});
+	}
+	
+	//新增框架属性
+	function doAdd(){
+		//清空新增表单数据
+		$('#fi').form('clear');
+		//设置窗口的属性
+		$('#insertData').window({
+			minimizable: false,
+			maximizable: false,
+			shadow : true,
+			closed : false,
+			resizable : false,
+			title : '入库新增'
+		})
+	}
+	
+	//保存编辑(提交编辑)
+	function doSave(){
+		//得到勾选的个数
+		var va=$('#grid').datagrid('getSelections');
+		//判断勾选的是否是一行
+		if(1==va.length){
+			// 获取选中行的Index的值
+			var rowIndex=$('#grid').datagrid('getRowIndex',$('#grid').datagrid('getSelected'));
+			//保存编辑
+			$("#grid").datagrid('endEdit', rowIndex);
+		}else{
+			alert("请选中编辑状态的这一行进行保存！");
+		}
+	}
+	
+	//确认编辑(开始编辑)
+	function doUpdate(){
+		//得到勾选的个数
+		var va=$('#grid').datagrid('getSelections');
+		//判断勾选的是否是一行
+		if(1==va.length){
+			//得到当前总行数
+			var countNumber=$('#grid').datagrid('getPager').data("pagination").options.total;
+			//循环取消所有的编辑框
+			for(var i=0;i<countNumber;i++){
+				//取消当前的编辑框
+				$("#grid").datagrid('cancelEdit', i);
+			}
+			// 获取选中行的Index的值
+			var rowIndex=$('#grid').datagrid('getRowIndex',$('#grid').datagrid('getSelected'));
+			//确认编辑
+			$("#grid").datagrid('beginEdit', rowIndex);
+		}else{
+			alert("请选择一行进行确定！");
+		}
+	}
+	
+	//取消编辑(结束便捷)
+	function doCancel() {
+		//取消当前全部勾选
+		$("#grid").datagrid('uncheckAll');
+		//得到当前总行数
+		var countNumber=$('#grid').datagrid('getPager').data("pagination").options.total;
+		//循环取消所有的编辑框
+		for(var i=0;i<countNumber;i++){
+			//取消当前的编辑框
+			$("#grid").datagrid('cancelEdit', i);
+		}
+	}
+
+	//数据网格的初始化属性
+	$(function() {
+		//新增界面的初始化属性
+		$('#insertData').window({
+			closed : true
+		});
+		
+		//修改单元格的数据
+		$('#grid').datagrid({
+			onAfterEdit : function(index, row, changes) {
+				$.ajax({
+					type:"post",
+					url:"updateDelivery.action",
+					data:"sendId="+row.sendId+"&packingid="+row.packingid+
+					"&networkstation="+row.networkstation+"&statusing="+row.statusing+
+					"&courierId="+row.courierId+"&operator="+row.operator+
+					"&sendTime="+row.sendTime+"&completeTime="+row.completeTime,
+					dataType:"text",
+					success:function(result){
+						$("#grid").datagrid("reload");//自动刷新
+					}
+				})
+			}
+		});
+
+		//添加数据网格修改属性
+		$('#grid').datagrid().datagrid('enableCellEditing');
+
+		// 先将body隐藏，再显示，不会出现页面刷新效果
+		$("body").css({
+			visibility : "visible"
+		});
+
+		// 数据网格属性
+		$('#grid').datagrid({
+			iconCls : 'icon-edit',
+			fit : true,
+			border : true,
+			rownumbers : true,
+			striped : true,
+			pageNumber : 1,
+			pageSize : 10,
+			pageList : [ 10, 20, 30, 40, 50 ],
+			pagination : true,
+			toolbar : '#ft',
+			url : "selectLimitDelivery.action",
+			columns : instorageorder_columns
+		});
+	});
+
+	//设置数据网格的修改属性
+	$.extend($.fn.datagrid.methods, {
+		editCell : function(jq, param) {
+			return jq.each(function() {
+				var opts = $(this).datagrid('options');
+				var fields = $(this).datagrid('getColumnFields', true).concat(
+						$(this).datagrid('getColumnFields'));
+				for (var i = 0; i < fields.length; i++) {
+					var col = $(this).datagrid('getColumnOption', fields[i]);
+					col.editor1 = col.editor;
+					if (fields[i] != param.field) {
+						col.editor = null;
+					}
+				}
+				$(this).datagrid('beginEdit', param.index);
+				var ed = $(this).datagrid('getEditor', param);
+				if (ed) {
+					if ($(ed.target).hasClass('textbox-f')) {
+						$(ed.target).textbox('textbox').focus();
+					} else {
+						$(ed.target).focus();
+					}
+				}
+				for (var i = 0; i < fields.length; i++) {
+					var col = $(this).datagrid('getColumnOption', fields[i]);
+					col.editor = col.editor1;
+				}
+			});
+		},
+		enableCellEditing : function(jq) {
+			return jq.each(function() {
+				var dg = $(this);
+				var opts = dg.datagrid('options');
+				opts.oldOnClickCell = opts.onClickCell;
+				opts.onClickCell = function(index, field) {
+					if (opts.editIndex != undefined) {
+						if (dg.datagrid('validateRow', opts.editIndex)) {
+							dg.datagrid('endEdit', opts.editIndex);
+							opts.editIndex = undefined;
+						} else {
+							return;
+						}
+					}
+					dg.datagrid('selectRow', index).datagrid('editCell', {
+						index : index,
+						field : field
+					});
+					opts.editIndex = index;
+					opts.oldOnClickCell.call(this, index, field);
+				}
+			});
+		}
+	});
+	// 定义字段属性与字段名
+	var instorageorder_columns = [ [{
+		field : 'OK',
+		title : 'check',
+		width : 100,
+		checkbox : true
+		},{
+		field : 'sendId',
+		title : '派送ID',
+		width : 100,
+		align : 'center'
+	}, {
+		field : 'packingid',
+		title : '包裹ID',
+		width : 100,
+		align : 'center'
+	}, {
+		field : 'networkstation',
+		title : '网点地址',
+		width : 200,
+		align : 'center',
+		editor : {
+			type : 'validatebox',
+			options : {
+				required : true
+			}
+		}
+	}, {
+		field : 'statusing',
+		title : '状态',
+		width : 100,
+		align : 'center',
+		editor : {
+			type : 'validatebox',
+			options : {
+				required : true
+			}
+		}
+	}, {
+		field : 'courierId',
+		title : '快递员ID',
+		width : 100,
+		align : 'center',
+		editor : {
+			type : 'validatebox',
+			options : {
+				required : true
+			}
+		}
+	}, {
+		field : 'operator',
+		title : '处理人',
+		width : 100,
+		align : 'center',
+		editor : {
+			type : 'validatebox',
+			options : {
+				required : true
+			}
+		}
+	}, {
+		field : 'sendTime',
+		title : '派发时间',
+		width : 150,
+		align : 'center',
+		editor : {
+			type : 'validatebox',
+			options : {
+				required : true
+			}
+		}
+	} , {
+		field : 'completeTime',
+		title : '完成时间',
+		width : 150,
+		align : 'center',
+		editor : {
+			type : 'validatebox',
+			options : {
+				required : true
+			}
+		}
+	} ] ];
+</script>
+</html>

@@ -36,15 +36,15 @@
 		<!-- 依赖于数据源-->
 		<property name="dataSource" ref="dataSource" />
 		<!-- 要对mybatis的映射配置文件进行管理 -->
-	    <property name="mapperLocations" value="classpath:com/yidu/dao/*.xml"/>	
+	    <property name="mapperLocations" value="classpath:com/yidu/lrh/dao/*.xml"/>	
 	  	<!--   定义包的别名 -->
-	    <property name="typeAliasesPackage" value="com.yidu.bean"/>
+	    <property name="typeAliasesPackage" value="com.yidu.lrh.bean"/>
 	</bean>
 	
 	
 	<!-- 自动扫描 将Mapper接口生成代理注入到Spring-->
 	<bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-		<property name="basePackage" value="com.yidu.dao" />
+		<property name="basePackage" value="com.yidu.lrh.dao" />
 	</bean>
 	
 	
